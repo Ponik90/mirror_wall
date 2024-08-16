@@ -4,7 +4,6 @@ import 'package:mirror_wall/screen/home/provider/home_provider.dart';
 import 'package:mirror_wall/screen/no_internet/view/no_internet_screen.dart';
 
 import 'package:mirror_wall/utils/internet_provider.dart';
-import 'package:mirror_wall/utils/shared_preference.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
     context.read<InternetProvider>().checkInternet();
+    context.read<HomeProvider>().getBookMarkData();
   }
 
   @override
@@ -54,131 +54,173 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemBuilder: (context) {
                     return [
                       PopupMenuItem(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (context) {
-                                return BottomSheet(
-                                  onClosing: () {},
-                                  builder: (context) {
-                                    return Container(
-                                      height: 500,
-                                      width: MediaQuery.sizeOf(context).width,
-                                      color: Colors.white,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Expanded(
-                                            child: ListView.builder(
-                                              itemCount:
-                                                  providerW!.bookMark.length,
-                                              itemBuilder: (context, index) {
-                                                return Text(Uri.parse(providerW!
-                                                        .bookMark[index])
-                                                    .toString());
-                                              },
-                                            ),
+                        onTap: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return BottomSheet(
+                                onClosing: () {},
+                                builder: (context) {
+                                  return providerW!.bookMark.isEmpty
+                                      ? Container(
+                                          height: 500,
+                                          width:
+                                              MediaQuery.sizeOf(context).width,
+                                          color: Colors.white,
+                                          alignment: Alignment.center,
+                                          child:
+                                              const Text("No book mark here"),
+                                        )
+                                      : Container(
+                                          height: 500,
+                                          width:
+                                              MediaQuery.sizeOf(context).width,
+                                          color: Colors.white,
+                                          child: Column(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              Expanded(
+                                                child: ListView.builder(
+                                                  itemCount: providerW!
+                                                      .bookMark.length,
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    return ListTile(
+                                                      onTap: () {
+                                                        inAppWebViewController!
+                                                            .loadUrl(
+                                                          urlRequest:
+                                                              URLRequest(
+                                                            url: WebUri(providerW!
+                                                                    .bookMark[
+                                                                index]),
+                                                          ),
+                                                        );
+                                                      },
+                                                      title: Text(providerW!
+                                                          .bookMark[index]),
+                                                      trailing: IconButton(
+                                                        onPressed: () {
+                                                          providerW!
+                                                              .deleteBookMark(
+                                                                  index);
+                                                          Navigator.pop(
+                                                              context);
+                                                        },
+                                                        icon: const Icon(
+                                                            Icons.delete),
+                                                      ),
+                                                    );
+                                                  },
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                            );
-                          },
-                          icon: const Icon(Icons.bookmark),
-                          label: const Text("All Bookmarks"),
+                                        );
+                                },
+                              );
+                            },
+                          );
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.bookmark),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text("All Bookmarks"),
+                          ],
                         ),
                       ),
                       PopupMenuItem(
-                        child: TextButton.icon(
-                          onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  actions: [
-                                    RadioListTile(
-                                      value: "google",
-                                      groupValue: providerW!.searchEngine,
-                                      onChanged: (value) {
-                                        providerR!.changeSearchEngine(value);
-                                        Navigator.pop(context);
-                                        inAppWebViewController!.loadUrl(
-                                          urlRequest: URLRequest(
-                                            url: WebUri.uri(
-                                              Uri.parse(
-                                                  "https://www.google.com"),
-                                            ),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                actions: [
+                                  RadioListTile(
+                                    value: "google",
+                                    groupValue: providerW!.searchEngine,
+                                    onChanged: (value) {
+                                      providerR!.changeSearchEngine(value);
+                                      Navigator.pop(context);
+                                      inAppWebViewController!.loadUrl(
+                                        urlRequest: URLRequest(
+                                          url: WebUri.uri(
+                                            Uri.parse("https://www.google.com"),
                                           ),
-                                        );
-                                      },
-                                      title: const Text("Google"),
-                                    ),
-                                    RadioListTile(
-                                      value: "yahoo",
-                                      groupValue: providerW!.searchEngine,
-                                      onChanged: (value) {
-                                        providerR!.changeSearchEngine(value);
-                                        Navigator.pop(context);
+                                        ),
+                                      );
+                                    },
+                                    title: const Text("Google"),
+                                  ),
+                                  RadioListTile(
+                                    value: "yahoo",
+                                    groupValue: providerW!.searchEngine,
+                                    onChanged: (value) {
+                                      providerR!.changeSearchEngine(value);
+                                      Navigator.pop(context);
 
-                                        inAppWebViewController!.loadUrl(
-                                          urlRequest: URLRequest(
-                                            url: WebUri.uri(
-                                              Uri.parse(
-                                                  "https://www.yahoo.com"),
-                                            ),
+                                      inAppWebViewController!.loadUrl(
+                                        urlRequest: URLRequest(
+                                          url: WebUri.uri(
+                                            Uri.parse("https://www.yahoo.com"),
                                           ),
-                                        );
-                                      },
-                                      title: const Text("Yahoo"),
-                                    ),
-                                    RadioListTile(
-                                      value: "bing",
-                                      groupValue: providerW!.searchEngine,
-                                      onChanged: (value) {
-                                        providerR!.changeSearchEngine(value);
-                                        Navigator.pop(context);
+                                        ),
+                                      );
+                                    },
+                                    title: const Text("Yahoo"),
+                                  ),
+                                  RadioListTile(
+                                    value: "bing",
+                                    groupValue: providerW!.searchEngine,
+                                    onChanged: (value) {
+                                      providerR!.changeSearchEngine(value);
+                                      Navigator.pop(context);
 
-                                        inAppWebViewController!.loadUrl(
-                                          urlRequest: URLRequest(
-                                            url: WebUri.uri(
-                                              Uri.parse("https://www.bing.com"),
-                                            ),
+                                      inAppWebViewController!.loadUrl(
+                                        urlRequest: URLRequest(
+                                          url: WebUri.uri(
+                                            Uri.parse("https://www.bing.com"),
                                           ),
-                                        );
-                                      },
-                                      title: const Text("Bing"),
-                                    ),
-                                    RadioListTile(
-                                      value: "duckduckgo",
-                                      groupValue: providerW!.searchEngine,
-                                      onChanged: (value) {
-                                        providerR!.changeSearchEngine(value);
-                                        Navigator.pop(context);
+                                        ),
+                                      );
+                                    },
+                                    title: const Text("Bing"),
+                                  ),
+                                  RadioListTile(
+                                    value: "duckduckgo",
+                                    groupValue: providerW!.searchEngine,
+                                    onChanged: (value) {
+                                      providerR!.changeSearchEngine(value);
+                                      Navigator.pop(context);
 
-                                        inAppWebViewController!.loadUrl(
-                                          urlRequest: URLRequest(
-                                            url: WebUri.uri(
-                                              Uri.parse(
-                                                  "https://www.duckduckgo.com"),
-                                            ),
+                                      inAppWebViewController!.loadUrl(
+                                        urlRequest: URLRequest(
+                                          url: WebUri.uri(
+                                            Uri.parse(
+                                                "https://www.duckduckgo.com"),
                                           ),
-                                        );
-                                      },
-                                      title: const Text("Duck Duck Go"),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          icon:
-                              const Icon(Icons.screen_search_desktop_outlined),
-                          label: const Text("Search Engine"),
+                                        ),
+                                      );
+                                    },
+                                    title: const Text("Duck Duck Go"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                        child: const Row(
+                          children: [
+                            Icon(Icons.screen_search_desktop_outlined),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Text("Search Engine"),
+                          ],
                         ),
                       ),
                     ];
@@ -246,16 +288,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.home),
                     ),
                     IconButton(
-                      onPressed: () {
-                        String url =
-                            inAppWebViewController!.getUrl().toString();
-
-                        //read
-
-                        //check null
-                        //add
-
-                        providerR!.addBookMark(url);
+                      onPressed: () async {
+                        var url = await inAppWebViewController!.getUrl();
+                        await providerR!.addBookMark(url.toString());
                       },
                       icon: const Icon(Icons.bookmark),
                     ),

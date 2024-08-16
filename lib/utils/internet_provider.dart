@@ -9,10 +9,10 @@ class InternetProvider with ChangeNotifier {
     connectivity.onConnectivityChanged.listen(
           (event) {
         if (event.contains(ConnectivityResult.none)) {
-          print("Internet is off ");
+
           isInternetOn = false;
         } else {
-          print("Internet is on");
+
           isInternetOn = true;
         }
         notifyListeners();

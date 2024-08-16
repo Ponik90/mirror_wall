@@ -4,7 +4,7 @@ import 'package:mirror_wall/utils/shared_preference.dart';
 class HomeProvider with ChangeNotifier {
   String searchEngine = "google";
   double? progress;
-  List<String> bookMark= [];
+  List<String> bookMark = [];
 
   void changeSearchEngine(value) {
     searchEngine = value;
@@ -16,17 +16,30 @@ class HomeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addBookMark(String bookmarkData)
-  async {
-    if(getBookMark()!=null)
-      {
-        bookMark=(await getBookMark())!;
+  Future<void> addBookMark(String bookmarkData) async {
+    List<String>? data = await getBookMark();
+    if (data != null) {
+      data.add(bookmarkData);
+      setBookMark(data);
+    } else {
+      setBookMark([bookmarkData]);
+    }
+    getBookMarkData();
+    notifyListeners();
+  }
 
-        if(bookMark!=null)
-          {
-            bookMark.add(bookmarkData);
-            setBookMark(bookMark);
-          }
-      }
+  Future<void> getBookMarkData() async {
+    var list = await getBookMark();
+    if (list != null) {
+      bookMark = list;
+      notifyListeners();
+    }
+  }
+
+  void deleteBookMark(int index) {
+
+    bookMark.removeAt(index);
+    setBookMark(bookMark);
+    notifyListeners();
   }
 }
